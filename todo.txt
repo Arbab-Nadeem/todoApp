@@ -1,0 +1,86 @@
+<input type="text" placeholder="filter text" id="search-text" />
+		<label for="hide-completed">
+			<input type="checkbox" id="hide-completed" />
+			Hide completed	
+		</label>
+		<div id="todos"></div>
+		<form action="" id="form-detail">
+			<input type="text" placeholder="Enter todo" name="todo" />
+			<button>Add todo</button>
+		</form>
+		<!-- <script src="../practice.js"></script> -->
+		<script src="todos.js"></script>
+
+
+
+
+		let todos = [];
+
+const filters = {
+	searchText: '',
+	hideCompleted: false,
+};
+const todosJSON = localStorage.getItem('todos');
+if (todosJSON !== null) {
+	todos = JSON.parse(todosJSON);
+}
+const renderTodos = function (todos, filters) {
+	const filteredTodos = todos.filter(function (todo) {
+		const searchTextMatch = todo.text
+			.toLowerCase()
+			.includes(filters.searchText.toLowerCase());
+		const hideCompletedMatch = !filters.hideCompleted || !todo.completed;
+		return searchTextMatch && hideCompletedMatch;
+	});
+	// filteredTodos = filteredTodos.filter(function (todo) {
+	// 	return !filters.hideCompleted || !todo.completed;
+	// if (filters.hideCompleted) {
+	// 	return !todo.completed;
+	// } else {
+	// 	return true;
+	// }
+	// });
+	const incompleteTodos = filteredTodos.filter(function (todo) {
+		return !todo.completed;
+	});
+	document.querySelector('#todos').innerHTML = '';
+	const summary = document.createElement('h2');
+	summary.textContent = `you've ${incompleteTodos.length} todos left`;
+	document.querySelector('#todos').appendChild(summary);
+	filteredTodos.forEach(function (todo) {
+		const newTodo = document.createElement('p');
+		if (todo.text.length > 0) {
+			newTodo.textContent = todo.text;
+		} else {
+			newTodo.textContent = 'empty';
+		}
+		document.querySelector('#todos').appendChild(newTodo);
+	});
+};
+
+renderTodos(todos, filters);
+document
+	.querySelector('#search-text')
+	.addEventListener('input', function (event) {
+		filters.searchText = event.target.value;
+		renderTodos(todos, filters);
+	});
+document
+	.querySelector('#form-detail')
+	.addEventListener('submit', function (event) {
+		event.preventDefault();
+		todos.push({
+			text: event.target.elements.todo.value,
+			completed: false,
+		});
+		localStorage.setItem('todos', JSON.stringify(todos));
+
+		renderTodos(todos, filters);
+		event.target.elements.todo.value = '';
+	});
+document
+	.querySelector('#hide-completed')
+	.addEventListener('change', function (event) {
+		filters.hideCompleted = event.target.checked;
+		renderTodos(todos, filters);
+	});
